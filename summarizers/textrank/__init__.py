@@ -9,7 +9,7 @@ import syntok.segmenter as sentence_segmenter
 import os
 from collections import OrderedDict
 from math import log10
-from .embeddings import sentence_embeddings
+from summarizers.embeddings import sentence_embeddings
 
 
 def _count_common_words(words_sentence_one, words_sentence_two):

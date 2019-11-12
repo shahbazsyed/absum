@@ -1,4 +1,4 @@
-from summarizers import textrank
+import summarizers.textrank as textrank
 
 text = """The Charlie Hebdo cartoonists were smarter theologians than the jihadis.
 
