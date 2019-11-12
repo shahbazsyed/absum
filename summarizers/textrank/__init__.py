@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(1, '.')
+
 import editdistance
 import io
 import itertools
@@ -6,6 +9,8 @@ import syntok.segmenter as sentence_segmenter
 import os
 from collections import OrderedDict
 from math import log10
+from .embeddings import sentence_embeddings
+
 
 def _count_common_words(words_sentence_one, words_sentence_two):
     return len(set(words_sentence_one) & set(words_sentence_two))
@@ -48,13 +53,18 @@ def _lexical_overlap(sentence_1, sentence_2):
         return 0
     return common_word_count / (log_s1 + log_s2)
 
+def _get_sentence_embedding_similarity(sentence_1, sentence_2):
+    score = sentence_embeddings.get_similarity_score(sentence_1, sentence_2)
+    return round(score,3)
+
+
 def summarize(text, ratio=0.2, weight_function="edit_distance"):
     """Return a paragraph style summary of the source text
     
     Args:
         text (string): Text to be summarized
         ratio (float, optional): Summary length in terms of ratio. Defaults to 0.2.
-        weight_function (str, optional): Weight function to compute edge weights for graph. Defaults to "edit_distance". Options [edit_distance, lexical_overlap]
+        weight_function (str, optional): Weight function to compute edge weights for graph. Defaults to "edit_distance". Options [edit_distance, lexical_overlap. embedding_similarity]
     """
     processed_segments = sentence_segmenter.process(text)
     sentences = []
@@ -66,7 +76,8 @@ def summarize(text, ratio=0.2, weight_function="edit_distance"):
         graph = _build_graph(sentences, _edit_distance)
     if weight_function == "lexical_overlap":
         graph = _build_graph(sentences, _lexical_overlap)
-    
+    if weight_function == "embedding_similarity":
+        graph = _build_graph(sentences, _get_sentence_embedding_similarity)
     calculated_page_rank = nx.pagerank(graph, weight='weight')
 
     # most important sentences in ascending order of importance

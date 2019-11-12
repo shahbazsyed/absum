@@ -1,4 +1,3 @@
-import syntok.segmenter as segmenter
 from summarizers import textrank
 
 text = """The Charlie Hebdo cartoonists were smarter theologians than the jihadis.
