@@ -39,9 +39,6 @@ def _edit_distance(sentence_1, sentence_2):
     return editdistance.eval(sentence_1, sentence_2)
 
 def _lexical_overlap(sentence_1, sentence_2):
-    print(type(sentence_1))
-    print(type(sentence_2))
-    print('\n')
     words_sentence_one = sentence_1.split()
     words_sentence_two = sentence_2.split()
     common_word_count = _count_common_words(words_sentence_one, words_sentence_two)
@@ -57,6 +54,37 @@ def _get_sentence_embedding_similarity(sentence_1, sentence_2):
     score = sentence_embeddings.get_similarity_score(sentence_1, sentence_2)
     return round(score,3)
 
+def _get_sentences_from_text(text):
+    """Returns list of sentences.
+    
+    Args:
+        text (string): Text to be split into sentences.
+    """
+    processed_segments = sentence_segmenter.process(text)
+    sentences = []
+    for paragraph in processed_segments:
+        for sentence in paragraph:
+            sentences.append("".join(map(str, sentence)).lstrip())
+    return sentences
+
+def analyse_graph(text, ratio=0.2):
+    sentences = _get_sentences_from_text(text)
+    gr = nx.Graph()
+    personalized = {sent: len(sent.split()) for sent in sentences}
+    gr.add_nodes_from(sentences)
+    node_pairs = list(itertools.combinations(sentences, 2))
+    for pair in node_pairs:
+        gr.add_edge(pair[0],pair[1],weight=1)
+    ppr = nx.pagerank(gr, personalization=personalized, weight='weight')
+    key_sentences = sorted(ppr, key=ppr.get,
+                       reverse=True)
+    length = len(key_sentences) * ratio
+    _temp_sentences = key_sentences[:int(length)]
+    _summary_sentences = [(i,item) for i, item in enumerate(_temp_sentences)]
+    _summary_sentences.sort(key=lambda x: sentences.index(x[1]))
+    summary_sentences = [item for i, item in _summary_sentences]
+    print(' '.join(summary_sentences))
+
 
 def summarize(text, ratio=0.2, weight_function="edit_distance"):
     """Return a paragraph style summary of the source text
@@ -66,12 +94,7 @@ def summarize(text, ratio=0.2, weight_function="edit_distance"):
         ratio (float, optional): Summary length in terms of ratio. Defaults to 0.2.
         weight_function (str, optional): Weight function to compute edge weights for graph. Defaults to "edit_distance". Options [edit_distance, lexical_overlap. embedding_similarity]
     """
-    processed_segments = sentence_segmenter.process(text)
-    sentences = []
-    for paragraph in processed_segments:
-        for sentence in paragraph:
-            sentences.append("".join(map(str, sentence)).lstrip())
-    
+    sentences = _get_sentences_from_text(text)
     if weight_function == "edit_distance":
         graph = _build_graph(sentences, _edit_distance)
     if weight_function == "lexical_overlap":

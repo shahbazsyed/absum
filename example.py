@@ -11,5 +11,14 @@ In one sense an iconoclast is someone who refuses the established view of things
 And yet this, of course, is exactly what Charlie Hebdo was doing. In the bluntest, rudest, most scatological and offensive of terms, Charlie Hebdo has been insisting that the images people worship are just human creations – bad and dangerous human creations. And in taking the piss out of such images, they actually exist in a tradition of religious iconoclasts going back as far as Abraham taking a hammer to his father’s statues. Both are attacks on representations of the divine. Which is why the terrorists, as well as being murderers, are theologically mistaken in thinking Charlie Hebdo is the enemy. For if God is fundamentally unrepresentable, then any representation of God is necessarily less than God and thus deserves to be fully and fearlessly attacked. And what better way of doing this than through satire, like scribbling a little moustache on a grand statue of God. 
 """
 
-summary = textrank.summarize(text, weight_function='edit_distance')
+summary = textrank.summarize(text, ratio=0.35, weight_function='embedding_similarity')
+print("Bert embeddings based summary-->"+"\n")
+print(summary)
+print('-' * 50)
+print("Lexical overlap based summary-->"+"\n")
+summary = textrank.summarize(text, ratio=0.35, weight_function='lexical_overlap')
+print(summary)
+print('-' * 50)
+print("Edit distance based summary-->"+"\n")
+summary = textrank.summarize(text, ratio=0.35, weight_function='edit_distance')
 print(summary)
